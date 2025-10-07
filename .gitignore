@@ -1,0 +1,15 @@
+main
+packer-plugin-vergeio
+**/packer_log*.txt
+**/git_*test.pkr.hcl
+crash.log
+
+dist/*
+.docs/*
+docs.zip
+
+# Temporary development files
+temp/
+
+# example files 
+example/
