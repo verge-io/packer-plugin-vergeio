@@ -1,0 +1,12 @@
+#cloud-config
+hostname: multi-file-vm
+manage_etc_hosts: true
+
+# Base user configuration
+users:
+  - default
+  - name: admin
+    gecos: Admin User
+    groups: [sudo]
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL

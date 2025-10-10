@@ -1,0 +1,2 @@
+instance-id: packer-test-vm
+local-hostname: test-vm

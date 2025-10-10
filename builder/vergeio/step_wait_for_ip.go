@@ -155,9 +155,6 @@ func (s *StepWaitForIP) Run(ctx context.Context, state multistep.StateBag) multi
 
 			if err != nil {
 				ui.Error(fmt.Sprintf("Lost guest agent connection during settle period: %v", err))
-				ui.Error("Restarting IP discovery process...")
-				// Reset and restart the process
-				discoveredIPs = []string{}
 				ui.Error("IP discovery failed during settle period - guest agent connection lost")
 				state.Put("error", fmt.Errorf("guest agent connection lost during settle period"))
 				settleCancel() // Clean up context before returning

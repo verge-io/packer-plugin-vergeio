@@ -1,0 +1,14 @@
+# Additional packages and services
+packages:
+  - docker.io
+  - nginx
+  - htop
+  - curl
+  - wget
+
+runcmd:
+  - systemctl enable docker
+  - systemctl start docker
+  - systemctl enable nginx
+  - systemctl start nginx
+  - echo "Multi-file cloud-init setup complete" > /tmp/multi-file-done

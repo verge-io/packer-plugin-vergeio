@@ -1,0 +1,37 @@
+#cloud-config
+hostname: packer-example-vm
+manage_etc_hosts: true
+
+# Debian cloud images default to systemd-networkd; make it explicit
+system_info:
+  network:
+    renderers: ["networkd"]
+
+# Users
+users:
+  - default
+  - name: packer
+    gecos: Packer User
+    groups: [sudo]
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: false
+    # Password: your-vm-password  (SHA-512 hash)
+    # Generate yourself with: mkpasswd --method=SHA-512
+    passwd: "$6$KaLts5S14pgvw07C$BssYmPOQBX04LmjjGKTmGhjGMTjKFsj1NT/XBxWCA03rdQVKx8JWt2.cBdwVgmjktZw6r.0qnyqpvS3IPejxq."
+
+# Allow SSH password auth and root login
+ssh_pwauth: true
+disable_root: false
+
+# Make PermitRootLogin explicit (some images default to 'prohibit-password')
+write_files:
+  - path: /etc/ssh/sshd_config.d/99-cloudinit-root.conf
+    permissions: "0644"
+    content: |
+      PermitRootLogin yes
+      PasswordAuthentication yes
+
+# Reload SSH after dropping the config
+runcmd:
+  - systemctl reload ssh || systemctl reload sshd
