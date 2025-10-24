@@ -48,6 +48,36 @@ func (s *StepWaitForIP) Run(ctx context.Context, state multistep.StateBag) multi
 	}
 
 	vmIdStr := vmId.(string)
+
+	// Priority 1: Check if static IP is already available from cloud-init
+	if existingHost, hostExists := state.GetOk("host"); hostExists {
+		existingIPs, _ := state.GetOk("discovered_ips")
+		ui.Say(fmt.Sprintf("Static IP already configured: %s", existingHost.(string)))
+		ui.Say("Skipping guest agent IP discovery - using static IP from cloud-init")
+		ui.Message("Static IP takes priority over guest agent IP discovery")
+
+		// Validate that we have proper IP information
+		if existingIPs != nil {
+			ui.Message(fmt.Sprintf("Available IPs: %v", existingIPs))
+		}
+
+		ui.Say(fmt.Sprintf("VM is ready for provisioning at: %s", existingHost.(string)))
+		return multistep.ActionContinue
+	}
+
+	// Priority 2: Check if guest agent is enabled for IP discovery
+	config := state.Get("config").(*Config)
+	if !config.GuestAgent {
+		ui.Error("No static IP configured and guest_agent is disabled")
+		ui.Error("Must either:")
+		ui.Error("  1. Configure static IP in cloud-init network-config, or")
+		ui.Error("  2. Enable guest_agent = true for automatic IP discovery")
+		state.Put("error", fmt.Errorf("no IP discovery method available - enable guest_agent or configure static IP"))
+		return multistep.ActionHalt
+	}
+
+	// Priority 3: Proceed with guest agent IP discovery
+	ui.Say(fmt.Sprintf("Guest agent enabled - proceeding with IP discovery for VM ID: %s", vmIdStr))
 	ui.Message(fmt.Sprintf("Waiting for guest agent IP discovery for VM ID: %s", vmIdStr))
 
 	// Set default timeouts if not configured

@@ -139,22 +139,36 @@ bootWait:
 	// Mark that VM has been powered on for cleanup purposes
 	state.Put("vm_powered_on", true)
 
-	// Extract static IP from cloud-init network configuration
+	// Try to extract static IP from cloud-init network configuration (optional)
 	config := state.Get("config").(*Config)
 	staticIP, err := s.extractIPFromCloudInit(config)
 	if err != nil {
-		ui.Error(fmt.Sprintf("Failed to extract static IP from cloud-init config: %v", err))
-		ui.Error("Please ensure network-config cloud-init file contains a static IP address")
-		state.Put("error", fmt.Errorf("failed to extract static IP from cloud-init: %w", err))
-		return multistep.ActionHalt
+		// Static IP extraction failed - this is OK if guest agent is enabled
+		ui.Message("No static IP found in cloud-init network-config")
+		if config.GuestAgent {
+			ui.Message("Guest agent is enabled - IP discovery will be handled by next step")
+		} else {
+			ui.Error("No static IP configured and guest_agent is disabled")
+			ui.Error("Must either:")
+			ui.Error("  1. Configure static IP in cloud-init network-config, or")
+			ui.Error("  2. Enable guest_agent = true for automatic IP discovery")
+			state.Put("error", fmt.Errorf("no IP discovery method available - enable guest_agent or configure static IP"))
+			return multistep.ActionHalt
+		}
+	} else {
+		// Static IP found - use it
+		ui.Say(fmt.Sprintf("Using static IP from cloud-init network-config: %s", staticIP))
+		state.Put("host", staticIP)
+		state.Put("discovered_ips", []string{staticIP})
+		ui.Message("Static IP configured - guest agent IP discovery will be skipped")
 	}
 
-	ui.Say(fmt.Sprintf("Using static IP from cloud-init network-config: %s", staticIP))
-	state.Put("host", staticIP)
-	state.Put("discovered_ips", []string{staticIP})
-
 	ui.Say("VM power-on completed successfully!")
-	ui.Message(fmt.Sprintf("VM is now running at %s - SSH connectivity will be handled by Packer's communicator", staticIP))
+	if staticIP != "" {
+		ui.Message(fmt.Sprintf("VM is now running at %s - SSH connectivity will be handled by Packer's communicator", staticIP))
+	} else {
+		ui.Message("VM is now running - IP discovery will be handled by next step")
+	}
 
 	return multistep.ActionContinue
 }

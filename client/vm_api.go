@@ -11,7 +11,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -101,17 +103,17 @@ func getValidMachineTypes() []string {
 }
 
 type VMAPIDataSourceModel struct {
-	Id          int    `json:"id,omitempty"`
+	Id          int32  `json:"id,omitempty"`
 	Name        string `json:"name,omitempty"`
-	Key         int    `json:"$key,omitempty"`
+	Key         int32  `json:"$key,omitempty"`
 	IsSnapshot  bool   `json:"is_snapshot,omitempty"`
 	CPUType     string `json:"cpu_type,omitempty"`
 	MachineType string `json:"machine_type,omitempty"`
 	OSFamily    string `json:"os_family,omitempty"`
 	UEFI        bool   `json:"uefi,omitempty"`
 	Machine     struct {
-		Drives []*interface{} `json:"drives,omitempty"`
-		Nics   []*interface{} `json:"nics,omitempty"`
+		Drives []*VMDriveAPIDataSourceModel `json:"drives,omitempty"`
+		Nics   []*VMNICAPIDataSourceModel   `json:"nics,omitempty"`
 	} `json:"machine,omitempty"`
 }
 
@@ -427,6 +429,10 @@ func (va *VMApi) GetGuestAgentIPs(ctx context.Context, vmId string) ([]string, e
 		for _, ip := range network.IPAddresses {
 			if ip.IPAddressType == "ipv4" {
 				if ip.IPAddress != "" {
+					if isLoopbackIP(ip.IPAddress) {
+						log.Printf("[VergeIO]: Skipping loopback address: %s on interface %s", ip.IPAddress, network.Name)
+						continue
+					}
 					log.Printf("[VergeIO]: Found IPv4 address: %s on interface %s", ip.IPAddress, network.Name)
 					ipAddresses = append(ipAddresses, ip.IPAddress)
 				}
@@ -437,9 +443,9 @@ func (va *VMApi) GetGuestAgentIPs(ctx context.Context, vmId string) ([]string, e
 	}
 
 	if len(ipAddresses) > 0 {
-		log.Printf("[VergeIO]: Successfully discovered %d IP address(es): %v", len(ipAddresses), ipAddresses)
+		log.Printf("[VergeIO]: Successfully discovered %d non-loopback IPv4 address(es): %v", len(ipAddresses), ipAddresses)
 	} else {
-		log.Printf("[VergeIO]: No IPv4 addresses found in guest agent data")
+		log.Printf("[VergeIO]: No non-loopback IPv4 addresses found in guest agent data")
 	}
 
 	return ipAddresses, nil
@@ -487,7 +493,7 @@ func (va *VMApi) GetGuestAgentIPsWithDebug(ctx context.Context, vmId string) ([]
 	for _, network := range guestInfo.Network {
 		for _, ip := range network.IPAddresses {
 			if ip.IPAddressType == "ipv4" {
-				if ip.IPAddress != "" {
+				if ip.IPAddress != "" && !isLoopbackIP(ip.IPAddress) {
 					ipAddresses = append(ipAddresses, ip.IPAddress)
 				}
 			}
@@ -529,4 +535,167 @@ func (va *VMApi) WaitForGuestAgent(ctx context.Context, vmId string, timeout tim
 			}
 		}
 	}
+}
+
+// VMInfo represents VM information for data source
+type VMInfo struct {
+	ID          int32          `json:"id,omitempty"`
+	Name        string         `json:"name,omitempty"`
+	Key         int32          `json:"$key,omitempty"`
+	IsSnapshot  bool           `json:"is_snapshot,omitempty"`
+	CPUType     string         `json:"cpu_type,omitempty"`
+	MachineType string         `json:"machine_type,omitempty"`
+	OSFamily    string         `json:"os_family,omitempty"`
+	UEFI        bool           `json:"uefi,omitempty"`
+	Drives      []*VMDriveInfo `json:"drives,omitempty"`
+	Nics        []*VMNicInfo   `json:"nics,omitempty"`
+}
+
+type VMDriveInfo struct {
+	Key           int32                   `json:"key,omitempty"`
+	Name          string                  `json:"name,omitempty"`
+	Interface     string                  `json:"interface,omitempty"`
+	Media         string                  `json:"media,omitempty"`
+	Description   string                  `json:"description,omitempty"`
+	PreferredTier string                  `json:"preferred_tier,omitempty"`
+	MediaSource   *VMDriveMediaSourceInfo `json:"media_source,omitempty"`
+}
+
+type VMDriveMediaSourceInfo struct {
+	Key            int32 `json:"key,omitempty"`
+	UsedBytes      int64 `json:"used_bytes,omitempty"`
+	AllocatedBytes int64 `json:"allocated_bytes,omitempty"`
+	Filesize       int64 `json:"filesize,omitempty"`
+}
+
+type VMNicInfo struct {
+	Key        int32  `json:"key,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Interface  string `json:"interface,omitempty"`
+	Vnet       string `json:"vnet,omitempty"`
+	Status     string `json:"status,omitempty"`
+	Ipaddress  string `json:"ipaddress,omitempty"`
+	MacAddress string `json:"macaddress,omitempty"`
+}
+
+// GetVMs queries VMs and returns matching VMs with drives and nics data
+func (va *VMApi) GetVMs(ctx context.Context, filterName string, filterId int, isSnapshot bool) ([]VMInfo, error) {
+	log.Printf("[VergeIO]: Querying VMs with filters - Name: %s, Id: %d, IsSnapshot: %t", filterName, filterId, isSnapshot)
+
+	// Build filter options - use fields similar to Terraform implementation
+	opts := &Options{
+		Fields: "machine#$key as id, dashboard", // This matches the Terraform query
+	}
+
+	// Add filters if specified
+	var filters []string
+	if filterName != "" {
+		filters = append(filters, fmt.Sprintf("name eq '%s'", filterName))
+	}
+	if filterId > 0 {
+		filters = append(filters, fmt.Sprintf("id eq %d", filterId))
+	}
+
+	if len(filters) > 0 {
+		opts.Filter = strings.Join(filters, " and ")
+	}
+
+	// Query the API
+	apiResp, err := va.client.Get(VMEndpoint, opts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query VMs: %w", err)
+	}
+
+	if apiResp == nil {
+		return nil, errors.New("missing response from VergeIO API")
+	}
+
+	if apiResp.StatusCode != 200 {
+		return nil, fmt.Errorf("VergeIO API returned status code %d", apiResp.StatusCode)
+	}
+
+	// Decode the response using the data source model
+	var vmAPIResp []VMAPIDataSourceModel
+	if err := json.NewDecoder(apiResp.Body).Decode(&vmAPIResp); err != nil {
+		return nil, fmt.Errorf("failed to decode VMs response: %w", err)
+	}
+
+	// Convert API response to VMInfo format
+	var vms []VMInfo
+	for _, vmAPIRespItem := range vmAPIResp {
+		// Apply snapshot filter if specified
+		if filterName != "" || filterId > 0 {
+			// For specific name/id queries, include regardless of snapshot status for now
+		} else if isSnapshot != vmAPIRespItem.IsSnapshot {
+			// Skip if snapshot filter doesn't match
+			continue
+		}
+
+		vm := VMInfo{
+			ID:          vmAPIRespItem.Id,
+			Name:        vmAPIRespItem.Name,
+			Key:         vmAPIRespItem.Key,
+			IsSnapshot:  vmAPIRespItem.IsSnapshot,
+			CPUType:     vmAPIRespItem.CPUType,
+			MachineType: vmAPIRespItem.MachineType,
+			OSFamily:    vmAPIRespItem.OSFamily,
+			UEFI:        vmAPIRespItem.UEFI,
+		}
+
+		// Process drives
+		if vmAPIRespItem.Machine.Drives != nil {
+			for _, vmDrive := range vmAPIRespItem.Machine.Drives {
+				drive := &VMDriveInfo{
+					Key:           int32(vmDrive.Key),
+					Name:          vmDrive.Name,
+					Interface:     vmDrive.Interface,
+					Media:         vmDrive.Media,
+					Description:   vmDrive.Description,
+					PreferredTier: vmDrive.PreferredTier,
+				}
+
+				if vmDrive.MediaSource != nil {
+					drive.MediaSource = &VMDriveMediaSourceInfo{
+						Key:            int32(vmDrive.MediaSource.Key),
+						UsedBytes:      int64(vmDrive.MediaSource.UsedBytes),
+						AllocatedBytes: int64(vmDrive.MediaSource.AllocatedBytes),
+						Filesize:       int64(vmDrive.MediaSource.Filesize),
+					}
+				}
+
+				vm.Drives = append(vm.Drives, drive)
+			}
+		}
+
+		// Process nics
+		if vmAPIRespItem.Machine.Nics != nil {
+			for _, vmNic := range vmAPIRespItem.Machine.Nics {
+				nic := &VMNicInfo{
+					Key:        int32(vmNic.Key),
+					Name:       vmNic.Name,
+					Interface:  vmNic.Interface,
+					Vnet:       vmNic.Vnet,
+					Status:     vmNic.Status,
+					Ipaddress:  vmNic.Ipaddress,
+					MacAddress: vmNic.MacAddress,
+				}
+				vm.Nics = append(vm.Nics, nic)
+			}
+		}
+
+		vms = append(vms, vm)
+	}
+
+	log.Printf("[VergeIO]: Found %d VM(s) matching the criteria", len(vms))
+	return vms, nil
+}
+
+// isLoopbackIP checks if an IP address is a loopback address
+// This includes 127.0.0.1, ::1, and any address in the 127.0.0.0/8 range
+func isLoopbackIP(ipStr string) bool {
+	ip := net.ParseIP(ipStr)
+	if ip == nil {
+		return false
+	}
+	return ip.IsLoopback()
 }

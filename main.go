@@ -28,6 +28,7 @@ func main() {
 	pps.RegisterPostProcessor("my-post-processor", new(vergeioPP.PostProcessor))
 	pps.RegisterDatasource("my-datasource", new(vergeioData.Datasource))
 	pps.RegisterDatasource("networks", new(vergeioData.NetworkDataSource))
+	pps.RegisterDatasource("vms", new(vergeioData.VMDataSource))
 	pps.SetVersion(vergeioVersion.PluginVersion)
 	err := pps.Run()
 	if err != nil {

@@ -72,19 +72,18 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	// ==========================================
 
 	// Step 4: Wait for guest agent to report IP addresses
-	// TODO: TEMPORARILY DISABLED - Guest agent IP discovery not working
 	// This step discovers the VM's IP address(es) needed for SSH/WinRM connectivity
-	// steps = append(steps, &StepWaitForIP{
-	// 	WaitTimeout:   10 * time.Minute, // Maximum time to wait for IP discovery
-	// 	SettleTimeout: 30 * time.Second, // Time for IP to remain stable
-	// 	Config:        &b.config,        // Pass config for potential network filtering
-	// })
+	steps = append(steps, &StepWaitForIP{
+		WaitTimeout:   10 * time.Minute, // Maximum time to wait for IP discovery
+		SettleTimeout: 30 * time.Second, // Time for IP to remain stable
+		Config:        &b.config,        // Pass config for potential network filtering
+	})
 
 	// ==========================================
 	// PHASE 3: PROVISIONING
 	// ==========================================
 
-	// Step 4: Connect to the VM via SSH/WinRM
+	// Step 5: Connect to the VM via SSH/WinRM
 	// This uses Packer's standard communicator step to establish connectivity
 	steps = append(steps, &communicator.StepConnect{
 		Config:    &b.config.Comm,
@@ -92,7 +91,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 		SSHConfig: b.config.Comm.SSHConfigFunc(),
 	})
 
-	// Step 5: Run all configured provisioners
+	// Step 6: Run all configured provisioners
 	// This is where shell scripts, file uploads, Ansible, etc. are executed
 	steps = append(steps, &commonsteps.StepProvision{})
 
@@ -100,7 +99,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	// PHASE 4: CLEANUP AND FINALIZATION
 	// ==========================================
 
-	// Step 6: Gracefully shut down the VM via SSH/WinRM
+	// Step 7: Gracefully shut down the VM via SSH/WinRM
 	// This ensures the VM is in a clean state and all changes are persisted
 	steps = append(steps, &StepShutdown{
 		Command: b.config.ShutdownCommand, // User-configured shutdown command
