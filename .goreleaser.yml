@@ -1,5 +1,7 @@
 # This is an example goreleaser.yaml file with some sane defaults.
 # Make sure to check the documentation at http://goreleaser.com
+version: 2 
+
 env:
   - CGO_ENABLED=0
 before:
@@ -33,28 +35,19 @@ builds:
     ldflags:
       - '-s -w -X {{ .ModulePath }}/version.Version={{.Version}} -X {{ .ModulePath }}/version.VersionPrerelease= '
     goos:
-      - netbsd
-      - solaris
-      - openbsd
-      - freebsd
       - windows
       - linux
       - darwin
     goarch:
       - amd64
-      - '386'
-      - arm
       - arm64
     ignore:
-      - goos: openbsd
-        goarch: arm64
-      - goos: darwin
-        goarch: '386'
+      # linux/amd64 is built by the plugin-check build above
       - goos: linux
         goarch: amd64
     binary: '{{ .ProjectName }}_v{{ .Version }}_{{ .Env.API_VERSION }}_{{ .Os }}_{{ .Arch }}'
 archives:
-- format: zip
+- formats: [zip]
   files:
     - none*
   name_template: '{{ .ProjectName }}_v{{ .Version }}_{{ .Env.API_VERSION }}_{{ .Os }}_{{ .Arch }}'
@@ -82,4 +75,4 @@ release:
   #- glob: ./docs.zip
 
 changelog:
-  skip: true
+  disable: true
