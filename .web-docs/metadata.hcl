@@ -1,60 +1,55 @@
 # Copyright (c) HashiCorp, Inc.
 # SPDX-License-Identifier: MPL-2.0
 
-# Details on using this Integration template can be found at https://github.com/hashicorp/integration-template
-# This metadata.hcl file and the adjacent `components` docs directory should
+# This metadata.hcl file describes the VergeIO Packer plugin
+# This file and the adjacent `components` docs directory should
 # be kept in a `.web-docs` directory at the root of your plugin repository.
 integration {
-  name = "Integration Template"
-  description = "This is an integration template"
-  identifier = "packer/hashicorp/vergeio"
+  name = "VergeIO"
+  description = "A comprehensive Packer plugin for creating and provisioning virtual machines on VergeIO virtualization platform"
+  identifier = "packer/vergeio/vergeio"
   flags = [
-    # Remove if the plugin does not conform to the HCP Packer requirements.
+    # This plugin conforms to the HCP Packer requirements.
     #
     # Please refer to our docs if you want your plugin to be compatible with
     # HCP Packer: https://developer.hashicorp.com/packer/docs/plugins/creation/hcp-support
     "hcp-ready",
-    # This signals that the plugin is unmaintained and will eventually not be
-    # working with a future version of Packer.
-    #
-    # On the integrations, this will end-up as an icon on the plugin's main card.
-    "archived",
   ]
   docs {
-    # If you'd prefer not to publish docs on HashiCorp websites, you can
-    # set `process_docs` to `false`. If `process_docs` is `false`, you MUST
-    # provide a `external_url` so we can link back to your plugin repo.
+    # Publish docs on HashiCorp websites
     process_docs = true
-    # Note that the README location is relative to this file. We recommend
-    # keeping the default value, as the adjacent `compile-to-webdocs` script
-    # will automatically copy the README from the `docs` directory of this
-    # repository to the correct location.
+    # Note that the README location is relative to this file
     readme_location = "./README.md"
-    # `external_url` allows us to link back to your plugin repo.
-    external_url = "https://github.com/hashicorp/integration-template"
+    # Link back to the plugin repository
+    external_url = "https://github.com/vergeio/packer-plugin-vergeio"
   }
   license {
     type = "MPL-2.0"
-    url = "https://github.com/hashicorp/integration-template/blob/main/LICENSE.md"
+    url = "https://github.com/vergeio/packer-plugin-vergeio/blob/main/LICENSE"
   }
   component {
     type = "builder"
-    name = "Component Name (e.g HappyCloud EBS)"
-    slug = "name"
+    name = "VergeIO Builder"
+    slug = "builder"
   }
   component {
     type = "provisioner"
-    name = "Component Name (e.g HappyCloud Shell)"
-    slug = "name"
+    name = "VergeIO Provisioner"
+    slug = "provisioner"
   }
   component {
     type = "post-processor"
-    name = "Component Name"
-    slug = "name"
+    name = "VergeIO Post-processor"
+    slug = "post-processor"
   }
   component {
     type = "data-source"
-    name = "Component Name"
-    slug = "name"
+    name = "VergeIO Networks"
+    slug = "networks"
+  }
+  component {
+    type = "data-source"
+    name = "VergeIO VMs"
+    slug = "vms"
   }
 }
