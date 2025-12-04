@@ -7,7 +7,7 @@
 integration {
   name = "VergeIO"
   description = "A comprehensive Packer plugin for creating and provisioning virtual machines on VergeIO virtualization platform"
-  identifier = "packer/vergeio/vergeio"
+  identifier = "packer/verge-io/vergeio"
   flags = [
     # This plugin conforms to the HCP Packer requirements.
     #
