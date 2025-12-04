@@ -65,7 +65,7 @@ data "vergeio-networks" "external_network" {
   vergeio_insecure = var.vergeio_insecure
   vergeio_port     = var.vergeio_port
 
-  filter_name = "farooq-test"
+  filter_name = "TEMPLATENETWORKNAME"  # Change this to your template Network name
 }
 
 # VM data source - discover VM by name (example usage)
@@ -76,7 +76,7 @@ data "vergeio-vms" "template_vm" {
   vergeio_insecure = var.vergeio_insecure
   vergeio_port     = var.vergeio_port
 
-  filter_name = "farooqtemp"  # Change this to your template VM name
+  filter_name = "TEMPLATEVMNAME"  # Change this to your template VM name
 }
 
 # VergeIO VM source configuration
