@@ -52,7 +52,7 @@ packer {
   required_plugins {
     vergeio = {
       version = ">=v0.1.0"
-      source  = "github.com/borderssolutions/vergeio"
+      source  = "github.com/verge-io/vergeio"
     }
   }
 }
@@ -65,7 +65,18 @@ data "vergeio-networks" "external_network" {
   vergeio_insecure = var.vergeio_insecure
   vergeio_port     = var.vergeio_port
 
-  filter_name = "External"
+  filter_name = "farooq-test"
+}
+
+# VM data source - discover VM by name (example usage)
+data "vergeio-vms" "template_vm" {
+  vergeio_endpoint = var.vergeio_endpoint
+  vergeio_username = var.vergeio_username
+  vergeio_password = var.vergeio_password
+  vergeio_insecure = var.vergeio_insecure
+  vergeio_port     = var.vergeio_port
+
+  filter_name = "farooqtemp"  # Change this to your template VM name
 }
 
 # VergeIO VM source configuration
@@ -91,14 +102,20 @@ source "vergeio" "example" {
 
   # VM storage configuration
   vm_disks {
-    name           = "System Disk"
-    description    = "Primary system disk"
-    disksize       = 30
-    interface      = "virtio-scsi"
-    preferred_tier = 1
-    orderid        = 0
-    media          = "import"
-    media_source   = 15  # Change this to your source disk/image ID
+    # name           = "System Disk"
+    # description    = "Primary system disk"
+    # disksize       = 30
+    # interface      = "virtio-scsi"
+    # preferred_tier = 1
+    # orderid        = 0
+    # media          = "import"
+    # media_source   = 15  # Change this to your source disk/image ID
+    name           = "os_drive"
+    description    = "Clone of disk 12"
+    media          = "clone"
+    enabled        = true
+    media_source   = data.vergeio-vms.template_vm.vms[0].drives[0].media_source.key
+    preferred_tier = 3
   }
 
   # VM network configuration using data source

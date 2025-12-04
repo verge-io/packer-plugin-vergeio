@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	packersdk "github.com/hashicorp/packer-plugin-sdk/packer"
-	client "github.com/vergeio/packer-plugin-vergeio/client"
+	client "github.com/verge-io/packer-plugin-vergeio/client"
 )
 
 // StepSimpleShutdown powers off the VM using the VergeIO API

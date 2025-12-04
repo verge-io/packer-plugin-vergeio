@@ -8,11 +8,11 @@ import (
 	"log"
 	"os"
 
-	vergeio "github.com/vergeio/packer-plugin-vergeio/builder/vergeio"
-	vergeioData "github.com/vergeio/packer-plugin-vergeio/datasource/vergeio"
-	vergeioPP "github.com/vergeio/packer-plugin-vergeio/post-processor/vergeio"
-	vergeioProv "github.com/vergeio/packer-plugin-vergeio/provisioner/vergeio"
-	vergeioVersion "github.com/vergeio/packer-plugin-vergeio/version"
+	vergeio "github.com/verge-io/packer-plugin-vergeio/builder/vergeio"
+	vergeioData "github.com/verge-io/packer-plugin-vergeio/datasource/vergeio"
+	vergeioPP "github.com/verge-io/packer-plugin-vergeio/post-processor/vergeio"
+	vergeioProv "github.com/verge-io/packer-plugin-vergeio/provisioner/vergeio"
+	vergeioVersion "github.com/verge-io/packer-plugin-vergeio/version"
 
 	"github.com/hashicorp/packer-plugin-sdk/plugin"
 )

@@ -1,4 +1,4 @@
-module github.com/vergeio/packer-plugin-vergeio
+module github.com/verge-io/packer-plugin-vergeio
 
 go 1.23.2
 

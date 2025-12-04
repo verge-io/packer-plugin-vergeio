@@ -40,7 +40,7 @@ Add the following to your Packer configuration and run `packer init`:
 packer {
   required_plugins {
     vergeio = {
-      source  = "github.com/vergeio/vergeio"
+      source  = "github.com/verge-io/vergeio"
       version = ">=0.1.0"
     }
   }
@@ -50,13 +50,13 @@ packer {
 ### Using Packer Plugins Install
 
 ```bash
-packer plugins install github.com/vergeio/vergeio
+packer plugins install github.com/verge-io/vergeio
 ```
 
 ### Building from Source
 
 ```bash
-git clone https://github.com/vergeio/packer-plugin-vergeio
+git clone https://github.com/verge-io/packer-plugin-vergeio
 cd packer-plugin-vergeio
 make dev
 ```
@@ -67,7 +67,7 @@ make dev
 packer {
   required_plugins {
     vergeio = {
-      source  = "github.com/vergeio/vergeio"
+      source  = "github.com/verge-io/vergeio"
       version = ">=0.1.0"
     }
   }
@@ -382,7 +382,7 @@ source "vergeio" "web-server" {
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/vergeio/packer-plugin-vergeio/issues)
+- **Issues**: [GitHub Issues](https://github.com/verge-io/packer-plugin-vergeio/issues)
 - **Documentation**: [Official Documentation](https://developer.hashicorp.com/packer/integrations/vergeio/vergeio/latest)
 - **Community**: [HashiCorp Community Forum](https://discuss.hashicorp.com)
 

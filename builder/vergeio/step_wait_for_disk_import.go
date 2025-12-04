@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
-	client "github.com/vergeio/packer-plugin-vergeio/client"
+	client "github.com/verge-io/packer-plugin-vergeio/client"
 )
 
 // StepWaitForDiskImport waits for any disks with media="import" to complete importing

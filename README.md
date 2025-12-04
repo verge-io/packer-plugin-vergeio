@@ -1,61 +1,443 @@
 # Packer Plugin VergeIO
 
-This repository is a template for a Packer multi-component plugin. It is intended as a starting point for creating Packer plugins, containing:
+A production-ready Packer plugin for creating and provisioning virtual machines on VergeIO virtualization platform. This plugin provides complete VM lifecycle management with advanced features for enterprise environments.
 
-- A builder ([builder/vergeio](builder/vergeio))
-- A provisioner ([provisioner/vergeio](provisioner/vergeio))
-- A post-processor ([post-processor/vergeio](post-processor/vergeio))
-- A data source ([datasource/vergeio](datasource/vergeio))
-- Docs ([docs](docs))
-- A working example ([example](example))
+## Features
 
-These folders contain boilerplate code that you will need to edit to create your own Packer multi-component plugin.
-A full guide to creating Packer plugins can be found at [Extending Packer](https://www.packer.io/docs/plugins/creation).
+**Core VM Management:**
 
-In this repository you will also find a pre-defined GitHub Action configuration for the release workflow
-(`.goreleaser.yml` and `.github/workflows/release.yml`). The release workflow configuration makes sure the GitHub
-release artifacts are created with the correct binaries and naming conventions.
+- **VM Creation**: Complete VM creation with hardware, storage, and network configuration
+- **Intelligent Power Management**: Real power state verification with configurable timeouts
+- **Disk Import Support**: Automatic waiting for disk imports to complete before VM power-on
+- **Network Discovery**: Dynamic network resolution by name using data sources
+- **Cloud-init Integration**: Full cloud-init support with inline contents and external file loading
+- **Multi-platform**: Supports Linux, Windows, and other operating systems
 
-Please see the [GitHub template repository documentation](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template)
-for how to create a new repository from this template on GitHub.
+**Advanced Capabilities:**
 
-## Packer plugin projects
+- **SSH/WinRM Connectivity**: Optimized boot process leveraging Packer's communicator for reliability
+- **Static IP Configuration**: Automatic extraction from cloud-init network configuration
+- **Graceful Shutdown**: 4-phase shutdown process with power state verification
+- **Network Data Source**: Query VergeIO networks by name for portable configurations
+- **Variable Management**: Centralized credential management with sensitive value protection
+- **Error Recovery**: Comprehensive rollback and cleanup on failures
 
-Here's a non exaustive list of Packer plugins that you can checkout:
+**Enterprise Ready:**
 
-- [github.com/hashicorp/packer-plugin-docker](https://github.com/hashicorp/packer-plugin-docker)
-- [github.com/exoscale/packer-plugin-exoscale](https://github.com/exoscale/packer-plugin-exoscale)
-- [github.com/sylviamoss/packer-plugin-comment](https://github.com/sylviamoss/packer-plugin-comment)
-- [github.com/hashicorp/packer-plugin-hashicups](https://github.com/hashicorp/packer-plugin-hashicups)
+- **Production Tested**: Used in live VergeIO environments
+- **Comprehensive Logging**: Detailed debug output for troubleshooting
+- **API Integration**: Full VergeIO API v4 support with proper error handling
 
-Looking at their code will give you good examples.
+## Components
 
-## Build from source
+- **Builder** ([builder/vergeio](builder/vergeio)) - Creates VMs with complete hardware configuration
+- **Network Data Source** ([datasource/vergeio](datasource/vergeio)) - Discovers network IDs by name
+- **Provisioner** ([provisioner/vergeio](provisioner/vergeio)) - VergeIO-specific provisioning tasks
+- **Post-processor** ([post-processor/vergeio](post-processor/vergeio)) - VM export and management
+- **Documentation** ([.web-docs](.web-docs)) - Complete usage documentation
+- **Examples** ([example](example)) - Working configuration examples
 
-1. Clone this GitHub repository locally.
+## Quick Start
 
-2. Run this command from the root directory:
+### 1. Installation
 
-```shell
-go build -ldflags="-X github.com/hashicorp/packer-plugin-vergeio/version.VersionPrerelease=dev" -o packer-plugin-vergeio
+Build and install the plugin:
+
+```bash
+# Clone the repository
+git clone https://github.com/verge-io/packer-plugin-vergeio.git
+cd packer-plugin-vergeio
+
+# Build the plugin
+go build -ldflags="-X github.com/verge-io/packer-plugin-vergeio/version.VersionPrerelease=dev" -o packer-plugin-vergeio
+
+# Install locally
+packer plugins install --path packer-plugin-vergeio github.com/verge-io/vergeio
 ```
 
-3. After you successfully compile, the `packer-plugin-vergeio` plugin binary file is in the root directory.
+### 2. Configuration
 
-4. To install the compiled plugin, run the following command
+Create a variables file with your VergeIO credentials:
 
-```shell
-packer plugins install --path packer-plugin-vergeio github.com/hashicorp/vergeio
+```bash
+# Copy example variables
+cp example/example.pkrvars.hcl example/local.pkrvars.hcl
+
+# Edit with your VergeIO cluster details
+vim example/local.pkrvars.hcl
 ```
 
-### Build on \*nix systems
+### 3. Build Your First VM
 
-Unix like systems with the make, sed, and grep commands installed can use the `make dev` to execute the build from source steps.
+```bash
+# Validate configuration
+packer validate -var-file="example/local.pkrvars.hcl" example/build.pkr.hcl
 
-### Build on Windows Powershell
+# Build VM
+packer build -var-file="example/local.pkrvars.hcl" example/build.pkr.hcl
+```
 
-The preferred solution for building on Windows are steps 2-4 listed above.
-If you would prefer to script the building process you can use the following as a guide
+## Configuration Example
+
+```hcl
+# Variables for VergeIO connection
+variable "vergeio_endpoint" {
+  type        = string
+  description = "VergeIO cluster endpoint"
+}
+
+variable "vergeio_username" {
+  type        = string
+  description = "VergeIO cluster username"
+}
+
+variable "vergeio_password" {
+  type        = string
+  description = "VergeIO cluster password"
+  sensitive   = true
+}
+
+variable "static_ip_address" {
+  type        = string
+  description = "Static IP address with CIDR notation"
+  default     = "131.153.224.59/29"
+}
+
+variable "gateway_ip" {
+  type        = string
+  description = "Gateway IP address"
+  default     = "131.153.224.57"
+}
+
+# Network data source - discover network by name
+data "vergeio-networks" "external_network" {
+  vergeio_endpoint = var.vergeio_endpoint
+  vergeio_username = var.vergeio_username
+  vergeio_password = var.vergeio_password
+
+  filter_name = "External"  # Find network by name
+}
+
+# VergeIO VM source
+source "vergeio" "example" {
+  # VergeIO connection
+  vergeio_endpoint = var.vergeio_endpoint
+  vergeio_username = var.vergeio_username
+  vergeio_password = var.vergeio_password
+  vergeio_insecure = true
+  vergeio_port     = 443
+
+  # VM configuration
+  name         = "packer-vm"
+  description  = "VM built with Packer"
+  os_family    = "linux"
+  cpu_cores    = 4
+  ram          = 4096
+  power_state  = true
+  guest_agent  = true
+
+  # Storage with import support
+  vm_disks {
+    name           = "System Disk"
+    disksize       = 20
+    interface      = "virtio-scsi"
+    preferred_tier = 1
+    media          = "import"      # Automatic import waiting
+    media_source   = 15            # Source disk/image ID
+  }
+
+  # Network with dynamic discovery
+  vm_nics {
+    name             = "primary_nic"
+    vnet             = data.vergeio-networks.external_network.networks[0].id
+    interface        = "virtio"
+    assign_ipaddress = true
+    enabled          = true
+  }
+
+  # Cloud-init configuration with inline contents
+  cloud_init_data_source = "nocloud"
+  cloud_init_files {
+    name     = "user-data"
+    contents = <<-EOF
+      #cloud-config
+      users:
+        - name: packer
+          sudo: ALL=(ALL) NOPASSWD:ALL
+          shell: /bin/bash
+          lock_passwd: false
+          passwd: $6$rounds=4096$salt$hash...
+
+      packages:
+        - curl
+        - wget
+        - htop
+      EOF
+  }
+
+  cloud_init_files {
+    name     = "meta-data"
+    contents = <<-EOF
+      instance-id: packer-vm-${uuidv4()}
+      local-hostname: packer-vm
+      EOF
+  }
+
+  # SSH connectivity
+  communicator = "ssh"
+  ssh_username = "packer"
+  ssh_password = "your-password"
+  ssh_timeout  = "20m"
+
+  # Power-on timeout configuration (optional)
+  # power_on_timeout = "3m"  # How long to wait for VM to power on (default: 2m)
+  # boot_timeout = "7m"      # Kept for compatibility (not used - SSH communicator handles boot waiting)
+
+  # Graceful shutdown
+  shutdown_command = "sudo shutdown -P now"
+  shutdown_timeout = "5m"
+}
+
+# Build with provisioning
+build {
+  sources = ["source.vergeio.example"]
+
+  # Verify SSH connectivity and system state
+  provisioner "shell" {
+    inline = [
+      "echo 'SSH connection successful!'",
+      "whoami",
+      "hostname",
+      "ip addr show",
+      "echo 'VM provisioning completed!'"
+    ]
+  }
+}
+```
+
+## Key Features Explained
+
+### Disk Import Management
+
+The plugin automatically handles disk imports with `media="import"`:
+
+```hcl
+vm_disks {
+  media        = "import"
+  media_source = 15  # Source disk/image ID
+}
+```
+
+The plugin will:
+
+1. Create the disk with import configuration
+2. Wait for import to complete (prevents power-on errors)
+3. Proceed with VM power-on only after import success
+
+### Network Data Source
+
+Discover networks dynamically instead of hardcoding IDs:
+
+```hcl
+data "vergeio-networks" "external" {
+  filter_name = "External"  # Network name
+}
+
+vm_nics {
+  vnet = data.vergeio-networks.external.networks[0].id
+}
+```
+
+### Cloud-Init File Loading
+
+The plugin supports both inline contents and external file loading for cloud-init configuration:
+
+#### Inline Contents (Traditional)
+
+```hcl
+cloud_init_files {
+  name = "user-data"
+  contents = <<-EOF
+    #cloud-config
+    hostname: my-vm
+    users:
+      - name: admin
+        sudo: ALL=(ALL) NOPASSWD:ALL
+    EOF
+}
+```
+
+#### External File Loading
+
+```hcl
+# Single file
+cloud_init_files {
+  name  = "user-data"
+  files = ["cloud-init/user-data.yml"]
+}
+
+# Multiple files (concatenated)
+cloud_init_files {
+  name  = "user-data"
+  files = [
+    "cloud-init/base-config.yml",
+    "cloud-init/packages.yml",
+    "cloud-init/services.yml"
+  ]
+}
+```
+
+#### File Loading Rules
+
+- **Mutually Exclusive**: Use either `contents` OR `files`, never both
+- **Optional**: Both `contents` and `files` are optional - entries without either are skipped
+- **Multiple Files**: Files are concatenated with newlines in the order specified
+- **Path Resolution**: Relative paths are resolved from the Packer template directory
+- **Validation**: Files must exist and be readable during configuration validation
+
+#### Example File Structure
+
+```
+project/
+├── build.pkr.hcl
+├── cloud-init/
+│   ├── user-data.yml      # Base user configuration
+│   ├── meta-data.yml      # Instance metadata
+│   ├── network-config.yml # Network configuration
+│   ├── packages.yml       # Additional packages
+│   └── services.yml       # Service configuration
+└── variables.pkrvars.hcl
+```
+
+#### Comprehensive Example
+
+```hcl
+cloud_init_data_source = "nocloud"
+
+# Load base configuration from file
+cloud_init_files {
+  name  = "user-data"
+  files = ["cloud-init/user-data.yml"]
+}
+
+# Load metadata from file
+cloud_init_files {
+  name  = "meta-data"
+  files = ["cloud-init/meta-data.yml"]
+}
+
+# Combine multiple configuration files
+cloud_init_files {
+  name  = "user-data-extended"
+  files = [
+    "cloud-init/base-config.yml",
+    "cloud-init/packages.yml",
+    "cloud-init/services.yml"
+  ]
+}
+
+# Optional cloud-init file (skipped if no contents/files)
+cloud_init_files {
+  name = "vendor-data"
+  # No contents or files - this entry will be skipped
+}
+```
+
+### Variable Management
+
+Centralized credential management:
+
+```hcl
+# Define once
+variable "vergeio_password" {
+  type      = string
+  sensitive = true
+}
+
+# Use everywhere
+data "vergeio-networks" "net" {
+  vergeio_password = var.vergeio_password
+}
+
+source "vergeio" "vm" {
+  vergeio_password = var.vergeio_password
+}
+```
+
+## Build Phases
+
+The plugin executes builds in these phases:
+
+1. **VM Creation**: VM + Disks + NICs creation
+2. **Disk Import Completion**: Wait for any import disks to finish
+3. **Power Management**: VM power-on with status verification
+4. **Network Discovery**: IP address discovery (guest agent)
+5. **Provisioning**: SSH/WinRM connectivity and provisioning
+6. **Cleanup**: Graceful shutdown and finalization
+
+## Platform Support
+
+**Tested Operating Systems:**
+
+- Linux distributions (Ubuntu, CentOS, Debian)
+- Windows Server (with WinRM)
+- FreeBSD and other Unix variants
+
+**Communication Methods:**
+
+- SSH (Linux/Unix)
+- WinRM (Windows)
+- Custom communicators
+
+## Troubleshooting
+
+**Enable Debug Logging:**
+
+```bash
+PACKER_LOG=1 packer build -var-file="local.pkrvars.hcl" build.pkr.hcl
+```
+
+**Common Issues:**
+
+- **"No such file or directory" for vnet**: Network ID doesn't exist - use network data source
+- **"Cannot power on VM while drives importing"**: Fixed automatically with import waiting
+- **SSH timeout**: Check cloud-init configuration and network settings
+- **Guest agent not reporting IP**: Ensure guest agent is installed on source image
+
+## Development
+
+### Building from Source
+
+```bash
+# Clone repository
+git clone https://github.com/verge-io/packer-plugin-vergeio.git
+cd packer-plugin-vergeio
+
+# Build plugin
+go build -ldflags="-X github.com/verge-io/packer-plugin-vergeio/version.VersionPrerelease=dev" -o packer-plugin-vergeio
+
+# Install locally
+packer plugins install --path packer-plugin-vergeio github.com/verge-io/vergeio
+```
+
+### Running Tests
+
+```bash
+# Install plugin locally first
+make dev
+
+# Run acceptance tests
+PACKER_ACC=1 go test -count 1 -v ./... -timeout=120m
+```
+
+### Unix Development
+
+```bash
+# Quick development build and install
+make dev
+```
+
+### Windows Development
 
 ```powershell
 $MODULE_NAME = (Get-Content go.mod | Where-Object { $_ -match "^module"  }) -replace 'module ',''
@@ -64,34 +446,29 @@ go build -ldflags="-X $MODULE_NAME/version.VersionPrerelease=dev" -o packer-plug
 packer plugins install --path packer-plugin-vergeio.exe $FQN
 ```
 
-## Running Acceptance Tests
+## Requirements
 
-Make sure to install the plugin locally using the steps in [Build from source](#build-from-source).
+- **Go**: >= 1.20
+- **Packer**: >= v1.10.2
+- **packer-plugin-sdk**: >= v0.6.1
+- **VergeIO**: API v4 compatible cluster
 
-Once everything needed is set up, run:
+## License
 
-```
-PACKER_ACC=1 go test -count 1 -v ./... -timeout=120m
-```
+This project is licensed under the Mozilla Public License 2.0 - see the [LICENSE](LICENSE) file for details.
 
-This will run the acceptance tests for all plugins in this set.
+## Contributing
 
-## Registering Plugin as Packer Integration
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
-Partner and community plugins can be hard to find if a user doesn't know what
-they are looking for. To assist with plugin discovery Packer offers an integration
-portal at https://developer.hashicorp.com/packer/integrations to list known integrations
-that work with the latest release of Packer.
+## Support
 
-Registering a plugin as an integration requires [metadata configuration](./metadata.hcl) within the plugin
-repository and approval by the Packer team. To initiate the process of registering your
-plugin as a Packer integration refer to the [Developing Plugins](https://developer.hashicorp.com/packer/docs/plugins/creation#registering-plugins) page.
+For issues and questions:
 
-# Requirements
-
-- [packer-plugin-sdk](https://github.com/hashicorp/packer-plugin-sdk) >= v0.5.2
-- [Go](https://golang.org/doc/install) >= 1.20
-
-## Packer Compatibility
-
-This vergeio template is compatible with Packer >= v1.10.2
+- GitHub Issues: [packer-plugin-vergeio/issues](https://github.com/verge-io/packer-plugin-vergeio/issues)
+- VergeIO Documentation: [VergeIO Docs](https://www.verge.io/resources/documents/)
+- Packer Documentation: [Packer Docs](https://www.packer.io/docs/)

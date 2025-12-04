@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/hcl2helper"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
-	client "github.com/vergeio/packer-plugin-vergeio/client"
+	client "github.com/verge-io/packer-plugin-vergeio/client"
 	"github.com/zclconf/go-cty/cty"
 )
 

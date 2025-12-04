@@ -9,10 +9,10 @@ import (
 	"fmt"
 	"log"
 
-	client "github.com/vergeio/packer-plugin-vergeio/client"
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/hcl2helper"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
+	client "github.com/verge-io/packer-plugin-vergeio/client"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -25,9 +25,9 @@ type VMConfig struct {
 	Insecure bool   `mapstructure:"vergeio_insecure" required:"false"`
 
 	// Filter options for VM query
-	FilterName   string `mapstructure:"filter_name" required:"false"`
-	FilterId     int    `mapstructure:"filter_id" required:"false"`
-	IsSnapshot   bool   `mapstructure:"is_snapshot" required:"false"`
+	FilterName string `mapstructure:"filter_name" required:"false"`
+	FilterId   int    `mapstructure:"filter_id" required:"false"`
+	IsSnapshot bool   `mapstructure:"is_snapshot" required:"false"`
 }
 
 type VMDataSource struct {
@@ -35,16 +35,16 @@ type VMDataSource struct {
 }
 
 type VMInfo struct {
-	ID          int32          `mapstructure:"id"`
-	Name        string         `mapstructure:"name"`
-	Key         int32          `mapstructure:"key"`
-	IsSnapshot  bool           `mapstructure:"is_snapshot"`
-	CPUType     string         `mapstructure:"cpu_type"`
-	MachineType string         `mapstructure:"machine_type"`
-	OSFamily    string         `mapstructure:"os_family"`
-	UEFI        bool           `mapstructure:"uefi"`
-	Drives      []VMDriveInfo  `mapstructure:"drives"`
-	Nics        []VMNicInfo    `mapstructure:"nics"`
+	ID          int32         `mapstructure:"id"`
+	Name        string        `mapstructure:"name"`
+	Key         int32         `mapstructure:"key"`
+	IsSnapshot  bool          `mapstructure:"is_snapshot"`
+	CPUType     string        `mapstructure:"cpu_type"`
+	MachineType string        `mapstructure:"machine_type"`
+	OSFamily    string        `mapstructure:"os_family"`
+	UEFI        bool          `mapstructure:"uefi"`
+	Drives      []VMDriveInfo `mapstructure:"drives"`
+	Nics        []VMNicInfo   `mapstructure:"nics"`
 }
 
 type VMDriveInfo struct {
@@ -104,9 +104,9 @@ func (d *VMDataSource) Configure(raws ...interface{}) error {
 		return fmt.Errorf("vergeio_endpoint is required")
 	}
 
-	log.Printf("[VergeIO VM DataSource]: Configured to connect to %s with user %s", 
+	log.Printf("[VergeIO VM DataSource]: Configured to connect to %s with user %s",
 		d.config.Endpoint, d.config.Username)
-	log.Printf("[VergeIO VM DataSource]: Filter settings - name='%s', id=%d, is_snapshot=%t", 
+	log.Printf("[VergeIO VM DataSource]: Filter settings - name='%s', id=%d, is_snapshot=%t",
 		d.config.FilterName, d.config.FilterId, d.config.IsSnapshot)
 
 	return nil
@@ -156,7 +156,7 @@ func (d *VMDataSource) Execute() (cty.Value, error) {
 					Description:   drive.Description,
 					PreferredTier: drive.PreferredTier,
 				}
-				
+
 				if drive.MediaSource != nil {
 					driveInfo.MediaSource = &VMDriveMediaSourceInfo{
 						Key:            drive.MediaSource.Key,
@@ -165,7 +165,7 @@ func (d *VMDataSource) Execute() (cty.Value, error) {
 						Filesize:       drive.MediaSource.Filesize,
 					}
 				}
-				
+
 				vmInfo.Drives = append(vmInfo.Drives, driveInfo)
 			}
 		}
@@ -187,7 +187,7 @@ func (d *VMDataSource) Execute() (cty.Value, error) {
 		}
 
 		vmInfos = append(vmInfos, vmInfo)
-		log.Printf("[VergeIO VM DataSource]: VM - ID: %d, Name: %s, Key: %d, IsSnapshot: %t, Drives: %d, NICs: %d", 
+		log.Printf("[VergeIO VM DataSource]: VM - ID: %d, Name: %s, Key: %d, IsSnapshot: %t, Drives: %d, NICs: %d",
 			vm.ID, vm.Name, vm.Key, vm.IsSnapshot, len(vmInfo.Drives), len(vmInfo.Nics))
 	}
 

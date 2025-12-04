@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	packersdk "github.com/hashicorp/packer-plugin-sdk/packer"
-	client "github.com/vergeio/packer-plugin-vergeio/client"
+	client "github.com/verge-io/packer-plugin-vergeio/client"
 )
 
 // This is a definition of a builder step and should implement multistep.Step
@@ -80,7 +80,7 @@ func (s *StepVMCreate) Run(ctx context.Context, state multistep.StateBag) multis
 	}
 
 	// post the data to the API
-	err := vmAPI.CreateVM(ctx, &apiData)
+	err := vmAPI.CreateVM(ctx, &apiData) // vmAPI.Post(client.VMActionEndpoint, bytes.NewBuffer(bytesPayload))
 	if err != nil {
 		ui.Error(fmt.Sprintf("Error making POST request to %s: %s", client.VMEndpoint, err))
 		state.Put("error", fmt.Errorf("error making POST request to %s: %w", client.VMActionEndpoint, err))

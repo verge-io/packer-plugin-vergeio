@@ -5,7 +5,7 @@ SHELL := /bin/bash
 
 # Plugin information
 PLUGIN_NAME := packer-plugin-vergeio
-MODULE_PATH := github.com/vergeio/packer-plugin-vergeio
+MODULE_PATH := github.com/verge-io/packer-plugin-vergeio
 
 # Version information
 VERSION := $(shell cat version/version.go | grep 'Version.*=' | head -1 | cut -d'"' -f2)
@@ -42,7 +42,7 @@ dev: build install ## Build and install plugin for local development
 .PHONY: install
 install: ## Install the plugin locally
 	@echo "Installing plugin locally..."
-	packer plugins install --path $(BINARY) github.com/vergeio/vergeio
+	packer plugins install --path $(BINARY) github.com/verge-io/vergeio
 
 .PHONY: clean
 clean: ## Clean build artifacts

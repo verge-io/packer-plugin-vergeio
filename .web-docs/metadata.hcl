@@ -21,11 +21,11 @@ integration {
     # Note that the README location is relative to this file
     readme_location = "./README.md"
     # Link back to the plugin repository
-    external_url = "https://github.com/vergeio/packer-plugin-vergeio"
+    external_url = "https://github.com/verge-io/packer-plugin-vergeio"
   }
   license {
     type = "MPL-2.0"
-    url = "https://github.com/vergeio/packer-plugin-vergeio/blob/main/LICENSE"
+    url = "https://github.com/verge-io/packer-plugin-vergeio/blob/main/LICENSE"
   }
   component {
     type = "builder"

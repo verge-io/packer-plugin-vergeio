@@ -10,7 +10,7 @@ import (
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	packersdk "github.com/hashicorp/packer-plugin-sdk/packer"
-	client "github.com/vergeio/packer-plugin-vergeio/client"
+	client "github.com/verge-io/packer-plugin-vergeio/client"
 )
 
 // StepPowerOn powers on the VM and verifies it's running
