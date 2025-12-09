@@ -107,13 +107,13 @@ variable "vergeio_password" {
 variable "static_ip_address" {
   type        = string
   description = "Static IP address with CIDR notation"
-  default     = "131.153.224.59/29"
+  default     = "192.168.1.2/24"
 }
 
 variable "gateway_ip" {
   type        = string
   description = "Gateway IP address"
-  default     = "131.153.224.57"
+  default     = "192.168.1.1"
 }
 
 # Network data source - discover network by name
