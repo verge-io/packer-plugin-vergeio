@@ -39,20 +39,27 @@ A production-ready Packer plugin for creating and provisioning virtual machines 
 
 ## Quick Start
 
-### 1. Installation
+## Installation
 
-Build and install the plugin:
+### Using Packer Init (Recommended)
+
+Add the following to your Packer configuration and run `packer init`:
+
+```hcl
+packer {
+  required_plugins {
+    vergeio = {
+      source  = "github.com/verge-io/vergeio"
+      version = ">=0.1.1"
+    }
+  }
+}
+```
+
+### Using Packer Plugins Install
 
 ```bash
-# Clone the repository
-git clone https://github.com/verge-io/packer-plugin-vergeio.git
-cd packer-plugin-vergeio
-
-# Build the plugin
-go build -ldflags="-X github.com/verge-io/packer-plugin-vergeio/version.VersionPrerelease=dev" -o packer-plugin-vergeio
-
-# Install locally
-packer plugins install --path packer-plugin-vergeio github.com/verge-io/vergeio
+packer plugins install github.com/verge-io/vergeio
 ```
 
 ### 2. Configuration
@@ -100,13 +107,13 @@ variable "vergeio_password" {
 variable "static_ip_address" {
   type        = string
   description = "Static IP address with CIDR notation"
-  default     = "131.153.224.59/29"
+  default     = "192.168.1.2/24"
 }
 
 variable "gateway_ip" {
   type        = string
   description = "Gateway IP address"
-  default     = "131.153.224.57"
+  default     = "192.168.1.1"
 }
 
 # Network data source - discover network by name
@@ -381,11 +388,10 @@ The plugin executes builds in these phases:
 
 - Linux distributions (Ubuntu, CentOS, Debian)
 - Windows Server (with WinRM)
-- FreeBSD and other Unix variants
 
 **Communication Methods:**
 
-- SSH (Linux/Unix)
+- SSH (Linux)
 - WinRM (Windows)
 - Custom communicators
 
@@ -430,7 +436,7 @@ make dev
 PACKER_ACC=1 go test -count 1 -v ./... -timeout=120m
 ```
 
-### Unix Development
+### Linux/macOS Development
 
 ```bash
 # Quick development build and install
