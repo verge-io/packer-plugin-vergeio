@@ -41,7 +41,7 @@ packer {
   required_plugins {
     vergeio = {
       source  = "github.com/verge-io/vergeio"
-      version = ">=0.1.0"
+      version = ">=0.1.1"
     }
   }
 }
@@ -53,7 +53,7 @@ packer {
 packer plugins install github.com/verge-io/vergeio
 ```
 
-### Building from Source
+### Building from Source (Recommended only for development/troubleshooting)
 
 ```bash
 git clone https://github.com/verge-io/packer-plugin-vergeio
@@ -362,7 +362,7 @@ source "vergeio" "web-server" {
 
 - **Host Platforms**: Linux, macOS, Windows
 - **Guest Operating Systems**: Linux distributions, Windows Server/Desktop
-- **Architectures**: x86_64 (primary), ARM64 (experimental)
+- **Architectures**: x86_64, ARM64 
 
 ## Documentation
 
