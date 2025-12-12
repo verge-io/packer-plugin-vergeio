@@ -12,7 +12,7 @@ build:
 	@go build -o ${BINARY}
 
 dev:
-	go build -ldflags="-X '${PLUGIN_FQN}/version.VersionPrerelease=dev'" -o ${BINARY}
+	@go build -ldflags="-X '${PLUGIN_FQN}/version.VersionPrerelease=dev'" -o ${BINARY}
 	packer plugins install --path ${BINARY} "$(shell echo "${PLUGIN_FQN}" | sed 's/packer-plugin-//')"
 
 test:
@@ -30,6 +30,6 @@ testacc: dev
 generate: install-packer-sdc
 	@go generate ./...
 	@rm -rf .docs
-	@packer-sdc renderdocs -src docs -partials docs-partials/ -dst .docs/
+	@packer-sdc renderdocs -src "docs" -partials docs-partials/ -dst ".docs/"
 	@./.web-docs/scripts/compile-to-webdocs.sh "." ".docs" ".web-docs" "hashicorp"
 	@rm -r ".docs"
