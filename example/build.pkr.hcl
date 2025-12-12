@@ -102,14 +102,6 @@ source "vergeio" "example" {
 
   # VM storage configuration
   vm_disks {
-    # name           = "System Disk"
-    # description    = "Primary system disk"
-    # disksize       = 30
-    # interface      = "virtio-scsi"
-    # preferred_tier = 1
-    # orderid        = 0
-    # media          = "import"
-    # media_source   = 15  # Change this to your source disk/image ID
     name           = "os_drive"
     description    = "Clone of disk 12"
     media          = "clone"
