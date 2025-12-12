@@ -32,8 +32,6 @@ A production-ready Packer plugin for creating and provisioning virtual machines 
 
 - **Builder** ([builder/vergeio](builder/vergeio)) - Creates VMs with complete hardware configuration
 - **Network Data Source** ([datasource/vergeio](datasource/vergeio)) - Discovers network IDs by name
-- **Provisioner** ([provisioner/vergeio](provisioner/vergeio)) - VergeIO-specific provisioning tasks
-- **Post-processor** ([post-processor/vergeio](post-processor/vergeio)) - VM export and management
 - **Documentation** ([.web-docs](.web-docs)) - Complete usage documentation
 - **Examples** ([example](example)) - Working configuration examples
 
