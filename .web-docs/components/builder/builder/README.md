@@ -1,5 +1,3 @@
-# VergeIO Builder
-
 The VergeIO builder creates virtual machines on VergeIO virtualization platform. This builder provides complete VM lifecycle management including hardware configuration, storage setup, network configuration, and cloud-init provisioning.
 
 The builder supports both Linux and Windows VMs with advanced features like UEFI boot, secure boot, static IP configuration, and graceful shutdown handling.

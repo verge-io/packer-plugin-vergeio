@@ -1,5 +1,3 @@
-# VergeIO Provisioner
-
 The VergeIO provisioner provides VergeIO-specific provisioning capabilities during the Packer build process. This provisioner can perform VergeIO platform-specific operations and configurations that are not possible with standard Packer provisioners.
 
 The provisioner integrates with the VergeIO API to perform actions such as VM configuration adjustments, network settings modifications, or other platform-specific customizations during the provisioning phase.

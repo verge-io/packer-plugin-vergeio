@@ -1,5 +1,3 @@
-# VergeIO Post-processor
-
 The VergeIO post-processor handles post-build operations for VMs created with the VergeIO builder. This post-processor can export VMs as templates, create snapshots, register images in catalogs, or perform cleanup operations after the Packer build completes.
 
 The post-processor integrates with the VergeIO API to perform operations like template creation, VM cloning, snapshot management, and artifact registration.

@@ -1,5 +1,3 @@
-# VergeIO VMs Data Source
-
 The VergeIO VMs data source allows you to discover existing virtual machines in a VergeIO cluster by name, ID, or other criteria. This is useful for finding base images, template VMs, or existing infrastructure to use as source material for new builds.
 
 This data source queries the VergeIO API to retrieve VM information including hardware configuration, storage details, and network interfaces.

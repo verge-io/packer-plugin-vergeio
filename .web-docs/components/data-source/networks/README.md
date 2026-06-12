@@ -1,5 +1,3 @@
-# VergeIO Networks Data Source
-
 The VergeIO Networks data source allows you to discover VergeIO virtual networks by name or type, eliminating the need for hardcoded network IDs and making Packer configurations portable between different VergeIO clusters.
 
 This data source queries the VergeIO API to retrieve network information that can be used in VM network interface configurations.
