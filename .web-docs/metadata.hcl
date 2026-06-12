@@ -24,7 +24,7 @@ integration {
     external_url = "https://github.com/verge-io/packer-plugin-vergeio"
   }
   license {
-    type = "MPL-2.0"
+    type = "Apache-2.0"
     url = "https://github.com/verge-io/packer-plugin-vergeio/blob/main/LICENSE"
   }
   component {
