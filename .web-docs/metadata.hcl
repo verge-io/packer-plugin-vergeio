@@ -1,6 +1,3 @@
-# Copyright (c) HashiCorp, Inc.
-# SPDX-License-Identifier: MPL-2.0
-
 # This metadata.hcl file describes the VergeIO Packer plugin
 # This file and the adjacent `components` docs directory should
 # be kept in a `.web-docs` directory at the root of your plugin repository.
