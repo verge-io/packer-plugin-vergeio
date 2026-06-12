@@ -1,7 +1,7 @@
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
-//go:generate packer-sdc mapstructure-to-hcl2 -type VMConfig,VMOutput
+//go:generate packer-sdc mapstructure-to-hcl2 -type VMConfig,VMOutput,VMInfo,VMDriveInfo,VMDriveMediaSourceInfo,VMNicInfo
 package vergeio
 
 import (

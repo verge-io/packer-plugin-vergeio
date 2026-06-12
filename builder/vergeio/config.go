@@ -1,3 +1,5 @@
+//go:generate packer-sdc mapstructure-to-hcl2 -type Config,VmDiskConfig,VmNicConfig,CloudInitFile
+
 package vergeio
 
 import (

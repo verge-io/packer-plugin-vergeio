@@ -31,9 +31,9 @@ func (*NetworkConfig) FlatMapstructure() interface{ HCL2Spec() map[string]hcldec
 // The decoded values from this spec will then be applied to a FlatNetworkConfig.
 func (*FlatNetworkConfig) HCL2Spec() map[string]hcldec.Spec {
 	s := map[string]hcldec.Spec{
-		"vergeio_username": &hcldec.AttrSpec{Name: "vergeio_username", Type: cty.String, Required: true},
-		"vergeio_password": &hcldec.AttrSpec{Name: "vergeio_password", Type: cty.String, Required: true},
-		"vergeio_endpoint": &hcldec.AttrSpec{Name: "vergeio_endpoint", Type: cty.String, Required: true},
+		"vergeio_username": &hcldec.AttrSpec{Name: "vergeio_username", Type: cty.String, Required: false},
+		"vergeio_password": &hcldec.AttrSpec{Name: "vergeio_password", Type: cty.String, Required: false},
+		"vergeio_endpoint": &hcldec.AttrSpec{Name: "vergeio_endpoint", Type: cty.String, Required: false},
 		"vergeio_port":     &hcldec.AttrSpec{Name: "vergeio_port", Type: cty.Number, Required: false},
 		"vergeio_insecure": &hcldec.AttrSpec{Name: "vergeio_insecure", Type: cty.Bool, Required: false},
 		"filter_name":      &hcldec.AttrSpec{Name: "filter_name", Type: cty.String, Required: false},
