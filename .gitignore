@@ -11,3 +11,16 @@ docs.zip
 # Temporary development files
 temp/
 
+# Local Packer variable files may contain cluster credentials.
+# Only the sanitized example is allowed in.
+*.pkrvars.hcl
+!example/example.pkrvars.hcl
+
+# macOS
+.DS_Store
+
+
+# Claude Code local files
+.claude/settings.local.json
+.claude/CLAUDE.local.md
+.claude/logs/
