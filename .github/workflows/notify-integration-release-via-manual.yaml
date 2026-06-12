@@ -20,19 +20,9 @@ jobs:
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           ref: ${{ github.event.inputs.branch }}
-      # Ensure that Docs are Compiled
-      - uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
-      - shell: bash
-        run: make generate
-      - shell: bash
-        run: |
-          if [[ -z "$(git status -s)" ]]; then
-            echo "OK"
-          else
-            echo "Docs have been updated, but the compiled docs have not been committed."
-            echo "Run 'make generate', and commit the result to resolve this error."
-            exit 1
-          fi
+      # Note: the scaffolding's "docs are compiled" gate is intentionally omitted.
+      # This repo maintains .web-docs/ directly and has no docs/ source tree,
+      # so `make generate` cannot round-trip the docs.
       # Perform the Release
       - name: Checkout integration-release-action
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
